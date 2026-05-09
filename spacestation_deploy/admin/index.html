@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Space Station — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#050508;--deep:#0a0a0f;--s1:#0f0f18;--s2:#161622;--s3:#1e1e2e;--bd:rgba(201,168,76,.15);--bd2:rgba(201,168,76,.25);
+  --gold:#c9a84c;--gold2:#e8d08a;--gold3:rgba(201,168,76,.08);
+  --t1:#f0ede8;--t2:#a8a8b8;--t3:#4a4a5e;
+  --tg:#229ED9;--red:#c0392b;--grn:#27ae60;--blu:#2980b9;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--void);color:var(--t1);min-height:100vh}
+
+/* LOGIN */
+#login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem;background:var(--void)}
+.lbox{background:var(--s1);border:1px solid var(--bd);border-radius:2px;padding:3rem;width:100%;max-width:380px;text-align:center}
+.llogo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--gold);letter-spacing:.25em;text-transform:uppercase;margin-bottom:.3rem}
+.lsub{font-size:.65rem;color:var(--t3);margin-bottom:2.5rem;letter-spacing:.2em;text-transform:uppercase}
+.lbox input{width:100%;background:var(--s2);border:1px solid var(--bd);color:var(--t1);font-size:.88rem;padding:12px 14px;border-radius:2px;margin-bottom:.75rem;outline:none;font-family:inherit;transition:border-color .2s;letter-spacing:.05em}
+.lbox input:focus{border-color:var(--gold)}
+.lbtn{width:100%;background:var(--gold);color:var(--void);font-size:.7rem;font-weight:500;padding:13px;border-radius:2px;border:none;cursor:pointer;font-family:inherit;letter-spacing:.2em;text-transform:uppercase;transition:background .2s}
+.lbtn:hover{background:var(--gold2)}
+.lerr{font-size:.72rem;color:var(--red);margin-top:.6rem;min-height:1rem;letter-spacing:.05em}
+
+/* APP */
+#app{display:none;min-height:100vh}
+.topbar{background:var(--s1);border-bottom:1px solid var(--bd);padding:0 1.5rem;height:58px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.topbar-logo{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:300;color:var(--gold);letter-spacing:.2em;text-transform:uppercase}
+.topbar-r{display:flex;align-items:center;gap:1rem}
+.topbar-r span{font-size:.7rem;color:var(--t3);letter-spacing:.05em}
+.tbtn{background:none;border:1px solid var(--bd);color:var(--t3);font-size:.68rem;padding:5px 12px;border-radius:2px;cursor:pointer;font-family:inherit;transition:.2s;letter-spacing:.08em;text-transform:uppercase}
+.tbtn:hover{border-color:var(--red);color:var(--red)}
+.tlink{font-size:.68rem;color:var(--gold);text-decoration:none;letter-spacing:.08em;text-transform:uppercase}
+
+.layout{display:flex;min-height:calc(100vh - 58px)}
+.sidebar{width:210px;background:var(--s1);border-right:1px solid var(--bd);padding:1.5rem 0;flex-shrink:0}
+.sitem{display:flex;align-items:center;gap:9px;padding:10px 1.5rem;font-size:.72rem;font-weight:400;color:var(--t3);cursor:pointer;transition:.2s;border-left:1px solid transparent;letter-spacing:.1em;text-transform:uppercase}
+.sitem:hover{color:var(--t1);background:var(--gold3)}
+.sitem.on{color:var(--gold);border-left-color:var(--gold);background:var(--gold3)}
+.ssep{height:1px;background:var(--bd);margin:.8rem 1.5rem}
+
+.main{flex:1;padding:2rem;overflow-x:hidden}
+.pg{display:none}.pg.on{display:block}
+.pg-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:300;color:var(--t1);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.2rem}
+.pg-sub{font-size:.72rem;color:var(--t3);margin-bottom:2rem;letter-spacing:.08em}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1px;background:var(--bd);margin-bottom:1px}
+.stat{background:var(--s1);padding:1.2rem 1.3rem}
+.stat-l{font-size:.6rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--t3);margin-bottom:.4rem}
+.stat-v{font-family:'Cormorant Garamond',serif;font-size:2rem;font-weight:300;color:var(--t1)}
+.stat-v.g{color:var(--gold)}
+
+/* TABLE */
+.tw{background:var(--s1);border:1px solid var(--bd);overflow:hidden;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem;min-width:600px}
+thead th{background:var(--s2);padding:10px 14px;text-align:left;font-size:.6rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--t3)}
+tbody tr{border-top:1px solid var(--bd);transition:background .15s}
+tbody tr:hover{background:var(--gold3)}
+td{padding:11px 14px;vertical-align:middle}
+.tname{font-weight:500;color:var(--t1);font-family:'Cormorant Garamond',serif;font-size:.95rem;letter-spacing:.05em}
+.tprice{color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:.95rem}
+.tmute{font-size:.72rem;color:var(--t3);letter-spacing:.05em}
+.chip{display:inline-block;font-size:.58rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border:1px solid}
+.chip-y{border-color:rgba(39,174,96,.3);color:var(--grn);background:rgba(39,174,96,.06)}
+.chip-n{border-color:rgba(192,57,43,.3);color:var(--red);background:rgba(192,57,43,.06)}
+.chip-new{border-color:var(--bd2);color:var(--gold);background:var(--gold3)}
+.chip-hot{border-color:rgba(192,57,43,.3);color:var(--red);background:rgba(192,57,43,.06)}
+.chip-sold{border-color:var(--bd);color:var(--t3);background:transparent}
+.acts{display:flex;gap:4px}
+.ab{font-size:.65rem;font-weight:400;padding:5px 11px;border:1px solid;cursor:pointer;font-family:inherit;transition:opacity .15s;background:transparent;letter-spacing:.08em;text-transform:uppercase;border-radius:2px}
+.ab:hover{opacity:.7}
+.ab-e{border-color:rgba(41,128,185,.3);color:var(--blu)}
+.ab-c{border-color:var(--bd2);color:var(--gold)}
+.ab-d{border-color:rgba(192,57,43,.3);color:var(--red)}
+
+/* FORM */
+.fcard{background:var(--s1);border:1px solid var(--bd);padding:1.8rem;margin-bottom:2rem}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+label{font-size:.62rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--t3)}
+input,select,textarea{background:var(--s2);border:1px solid var(--bd);color:var(--t1);font-size:.85rem;padding:10px 12px;border-radius:2px;outline:none;font-family:inherit;transition:border-color .2s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--gold)}
+textarea{resize:vertical;min-height:72px}
+select option{background:var(--s2)}
+
+/* IMAGE UPLOAD */
+.img-section{grid-column:1/-1}
+.img-section-title{font-size:.62rem;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--t3);margin-bottom:.75rem}
+.img-drop-zone{border:1px dashed var(--bd2);padding:2rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--s2)}
+.img-drop-zone:hover{border-color:var(--gold);background:var(--gold3)}
+.img-drop-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.dz-icon{font-size:1.8rem;margin-bottom:.5rem;opacity:.3;color:var(--gold)}
+.dz-hint{font-size:.75rem;color:var(--t3);line-height:1.6;letter-spacing:.03em}
+.dz-hint strong{color:var(--gold)}
+.img-previews{display:flex;flex-wrap:wrap;gap:.75rem;margin-top:1rem}
+.img-thumb{position:relative;width:88px;height:88px;overflow:hidden;border:1px solid var(--bd);flex-shrink:0}
+.img-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.img-thumb-del{position:absolute;top:4px;right:4px;background:rgba(192,57,43,.85);color:#fff;border:none;width:18px;height:18px;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.img-thumb-del:hover{background:var(--red)}
+.img-order-hint{font-size:.68rem;color:var(--t3);margin-top:.5rem;letter-spacing:.05em}
+.img-count{font-size:.72rem;color:var(--gold);margin-top:.4rem;font-weight:500;letter-spacing:.1em}
+
+.frow{display:flex;gap:.75rem;align-items:center;margin-top:1.2rem;flex-wrap:wrap}
+.fbtn{background:var(--gold);color:var(--void);font-size:.7rem;font-weight:500;padding:11px 28px;border:none;cursor:pointer;font-family:inherit;letter-spacing:.15em;text-transform:uppercase;transition:background .2s;border-radius:2px}
+.fbtn:hover{background:var(--gold2)}
+.fcancel{background:none;border:1px solid var(--bd);color:var(--t3);font-size:.7rem;padding:11px 20px;cursor:pointer;font-family:inherit;letter-spacing:.1em;text-transform:uppercase;border-radius:2px;transition:.2s}
+.fcancel:hover{border-color:var(--t3)}
+
+/* LOGO */
+.logo-section{background:var(--s1);border:1px solid var(--bd);padding:1.6rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap}
+.logo-preview{width:80px;height:80px;background:var(--s2);border:1px solid var(--bd);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0}
+.logo-preview img{width:100%;height:100%;object-fit:contain}
+.logo-info h3{font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:400;margin-bottom:.3rem;color:var(--t1);letter-spacing:.05em}
+.logo-info p{font-size:.72rem;color:var(--t3);line-height:1.6}
+.logo-upload-btn{position:relative;display:inline-block}
+.logo-upload-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.logo-btn-inner{background:transparent;border:1px solid var(--bd2);color:var(--gold);font-size:.68rem;padding:9px 18px;cursor:pointer;letter-spacing:.12em;text-transform:uppercase;transition:.2s}
+.logo-btn-inner:hover{background:var(--gold3)}
+
+/* ACTIVITY */
+.alog{display:flex;flex-direction:column}
+.aitem{display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border-top:1px solid var(--bd)}
+.aitem:first-child{border-top:none}
+.aico{width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;margin-top:1px;border:1px solid}
+.ico-add{border-color:rgba(39,174,96,.3);color:var(--grn)}
+.ico-edit{border-color:rgba(41,128,185,.3);color:var(--blu)}
+.ico-del{border-color:rgba(192,57,43,.3);color:var(--red)}
+.ico-note{border-color:var(--bd2);color:var(--gold)}
+.adet{color:var(--t1);line-height:1.4;font-size:.8rem}
+.ats{font-size:.68rem;color:var(--t3);margin-top:2px;letter-spacing:.03em}
+
+/* MODAL */
+.overlay{display:none;position:fixed;inset:0;background:rgba(5,5,8,.85);z-index:100;align-items:center;justify-content:center;padding:1rem}
+.overlay.open{display:flex}
+.modal{background:var(--s1);border:1px solid var(--bd);padding:1.8rem;width:100%;max-width:460px;max-height:80vh;overflow-y:auto}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:400;margin-bottom:1.2rem;color:var(--t1);letter-spacing:.08em}
+.citem{padding:10px 0;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.citem:first-of-type{border-top:none}
+.ctxt{font-size:.82rem;color:var(--t1);line-height:1.5}
+.cts{font-size:.68rem;color:var(--t3);margin-top:2px;letter-spacing:.03em}
+.cdel{background:none;border:none;color:var(--red);cursor:pointer;font-size:12px;padding:2px 5px;opacity:.5;transition:opacity .15s}
+.cdel:hover{opacity:1}
+.mfoot{display:flex;gap:.7rem;margin-top:.8rem}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;right:24px;background:var(--s1);border:1px solid var(--bd);padding:12px 20px;font-size:.8rem;color:var(--t1);z-index:200;transform:translateY(70px);opacity:0;transition:.28s;pointer-events:none;letter-spacing:.05em}
+#toast.show{transform:translateY(0);opacity:1}
+#toast.ok{border-color:rgba(39,174,96,.5);color:var(--grn)}
+#toast.err{border-color:rgba(192,57,43,.5);color:var(--red)}
+
+@media(max-width:700px){.sidebar{display:none}.fgrid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div class="lbox">
+    <div class="llogo">The Space Station</div>
+    <p class="lsub">Admin Panel</p>
+    <input type="password" id="pinput" placeholder="Enter password">
+    <button class="lbtn" onclick="doLogin()">Enter</button>
+    <p class="lerr" id="lerr"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <span class="topbar-logo">The Space Station — Admin</span>
+    <div class="topbar-r">
+      <span id="clock"></span>
+      <a href="/" target="_blank" class="tlink">← View Store</a>
+      <button class="tbtn" onclick="logout()">Exit</button>
+    </div>
+  </div>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sitem on" onclick="nav('dash')"><span>✦</span> Dashboard</div>
+      <div class="sitem" onclick="nav('products')"><span>◈</span> Collection</div>
+      <div class="sitem" onclick="nav('add')"><span>+</span> Add Piece</div>
+      <div class="ssep"></div>
+      <div class="sitem" onclick="nav('settings')"><span>⚙</span> Settings</div>
+      <div class="sitem" onclick="nav('log')"><span>◎</span> Activity</div>
+    </aside>
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <div class="pg on" id="pg-dash">
+        <p class="pg-title">Dashboard</p>
+        <p class="pg-sub">Your collection at a glance</p>
+        <div class="stats" id="statsRow"></div>
+        <div style="height:1px;background:var(--bd);margin:1.5rem 0"></div>
+        <div class="tw"><table>
+          <thead><tr><th>Photos</th><th>Piece</th><th>Category</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="dashTbl"></tbody>
+        </table></div>
+      </div>
+
+      <!-- COLLECTION -->
+      <div class="pg" id="pg-products">
+        <p class="pg-title">Collection</p>
+        <p class="pg-sub">Manage all pieces</p>
+        <div class="tw"><table>
+          <thead><tr><th>Photos</th><th>Name</th><th>Category</th><th>Price</th><th>Badge</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="prodTbl"></tbody>
+        </table></div>
+      </div>
+
+      <!-- ADD / EDIT -->
+      <div class="pg" id="pg-add">
+        <p class="pg-title" id="ftitle">Add Piece</p>
+        <p class="pg-sub">Upload photos and fill in the details</p>
+        <div class="fcard">
+          <div class="fgrid">
+            <div class="fg img-section">
+              <div class="img-section-title">Photos <span id="imgCountLabel" class="img-count"></span></div>
+              <div class="img-drop-zone">
+                <input type="file" id="imgFiles" accept="image/*" multiple onchange="handleImages(event)">
+                <div class="dz-icon">✦</div>
+                <div class="dz-hint"><strong>Click to upload</strong> or drag & drop<br>JPG, PNG, WEBP — max 5MB each — up to 8 photos</div>
+              </div>
+              <div class="img-previews" id="imgPreviews"></div>
+              <p class="img-order-hint" id="imgOrderHint" style="display:none">Click ✕ to remove. First photo = main display.</p>
+            </div>
+            <div class="fg"><label>Piece Name</label><input id="fn" placeholder="e.g. Orion Varsity Jacket"></div>
+            <div class="fg"><label>Category</label><input id="fcat" placeholder="e.g. Jackets, Bottoms, Accessories..."></div>
+            <div class="fg full"><label>Description</label><textarea id="fdesc" placeholder="Material, fit, sizing notes, colours..."></textarea></div>
+            <div class="fg"><label>Price (0 = Enquire)</label><input type="number" id="fprice" placeholder="e.g. 180" min="0"></div>
+            <div class="fg"><label>Currency</label>
+              <select id="fcur">
+                <option value="USD">USD — Dollar</option>
+                <option value="XAF">XAF — CFA Franc</option>
+                <option value="USDT">USDT — Tether</option>
+                <option value="EUR">EUR — Euro</option>
+                <option value="GBP">GBP — Pound</option>
+              </select>
+            </div>
+            <div class="fg"><label>Badge</label>
+              <select id="fbadge">
+                <option value="">None</option>
+                <option value="New">New</option>
+                <option value="Hot">Hot</option>
+                <option value="Sold">Sold Out</option>
+              </select>
+            </div>
+            <div class="fg"><label>Availability</label>
+              <select id="favail">
+                <option value="true">Available</option>
+                <option value="false">Unavailable</option>
+              </select>
+            </div>
+          </div>
+          <div class="frow">
+            <button class="fbtn" id="fsubmit" onclick="submitProduct()">Add to Collection</button>
+            <button class="fcancel" onclick="cancelEdit()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS -->
+      <div class="pg" id="pg-settings">
+        <p class="pg-title">Settings</p>
+        <p class="pg-sub">Store logo and configuration</p>
+        <div class="logo-section">
+          <div class="logo-preview" id="logoPreviewBox"><span style="color:var(--gold);opacity:.3;font-size:1.5rem">✦</span></div>
+          <div class="logo-info">
+            <h3>Store Logo</h3>
+            <p>Appears in the navbar and throughout the store.<br>Recommended: PNG with transparent background.</p>
+          </div>
+          <div class="logo-upload-btn">
+            <input type="file" accept="image/*" onchange="uploadLogo(event)">
+            <div class="logo-btn-inner">Upload Logo</div>
+          </div>
+          <button class="fcancel" onclick="removeLogo()" style="margin-left:.5rem">Remove</button>
+        </div>
+      </div>
+
+      <!-- LOG -->
+      <div class="pg" id="pg-log">
+        <p class="pg-title">Activity</p>
+        <p class="pg-sub">All actions tracked with timestamp</p>
+        <div class="tw alog" id="logList"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- NOTES MODAL -->
+<div class="overlay" id="noteOverlay" onclick="if(event.target===this)closeNotes()">
+  <div class="modal">
+    <p class="modal-title" id="noteTitle">Notes</p>
+    <div id="notesList"></div>
+    <textarea id="noteInput" placeholder="Add a note..." rows="3" style="margin-top:1rem"></textarea>
+    <div class="mfoot">
+      <button class="fbtn" style="flex:1" onclick="addNote()">Save Note</button>
+      <button class="fcancel" onclick="closeNotes()">Close</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+let TOKEN='', editId=null, noteProductId=null, currentImages=[];
+
+async function doLogin() {
+  const pass = document.getElementById('pinput').value;
+  try {
+    const r = await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pass})});
+    const d = await r.json();
+    if(d.ok){TOKEN=d.token;document.getElementById('login').style.display='none';document.getElementById('app').style.display='block';loadAll();tick();setInterval(tick,10000);loadLogoPreview();}
+    else document.getElementById('lerr').textContent='Incorrect password.';
+  } catch {document.getElementById('lerr').textContent='Connection error.';}
+}
+function logout(){TOKEN='';location.reload();}
+function tick(){document.getElementById('clock').textContent=new Date().toLocaleString();}
+document.getElementById('pinput').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+
+function loadLogoPreview(){const logo=localStorage.getItem('ss_logo');const box=document.getElementById('logoPreviewBox');if(logo){box.innerHTML=`<img src="${logo}" alt="logo">`;}}
+function uploadLogo(e){const file=e.target.files[0];if(!file)return;if(file.size>3*1024*1024){toast('Max 3MB','err');return;}const reader=new FileReader();reader.onload=ev=>{localStorage.setItem('ss_logo',ev.target.result);loadLogoPreview();toast('Logo saved ✓','ok');};reader.readAsDataURL(file);}
+function removeLogo(){localStorage.removeItem('ss_logo');document.getElementById('logoPreviewBox').innerHTML='<span style="color:var(--gold);opacity:.3;font-size:1.5rem">✦</span>';toast('Logo removed','err');}
+
+function handleImages(e){
+  const files=Array.from(e.target.files);const remaining=8-currentImages.length;
+  if(remaining<=0){toast('Maximum 8 photos','err');return;}
+  const toProcess=files.slice(0,remaining);let loaded=0;
+  toProcess.forEach(file=>{
+    if(file.size>5*1024*1024){toast(`${file.name} too large`,'err');loaded++;return;}
+    const reader=new FileReader();
+    reader.onload=ev=>{currentImages.push(ev.target.result);loaded++;if(loaded===toProcess.length)renderImagePreviews();};
+    reader.readAsDataURL(file);
+  });
+  e.target.value='';
+}
+function renderImagePreviews(){
+  const c=document.getElementById('imgPreviews');
+  document.getElementById('imgCountLabel').textContent=currentImages.length>0?`(${currentImages.length}/8)`:'';
+  document.getElementById('imgOrderHint').style.display=currentImages.length>0?'block':'none';
+  c.innerHTML=currentImages.map((img,i)=>`<div class="img-thumb"><img src="${img}" alt="photo ${i+1}"><button class="img-thumb-del" onclick="removeImage(${i})">✕</button></div>`).join('');
+}
+function removeImage(idx){currentImages.splice(idx,1);renderImagePreviews();}
+function resetImages(){currentImages=[];renderImagePreviews();document.getElementById('imgFiles').value='';}
+
+function nav(page){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sitem').forEach(s=>s.classList.remove('on'));
+  document.getElementById('pg-'+page).classList.add('on');
+  const map={dash:'Dashboard',products:'Collection',add:'Add',settings:'Settings',log:'Activity'};
+  document.querySelectorAll('.sitem').forEach(s=>{if(s.textContent.trim().startsWith(map[page]||'X'))s.classList.add('on');});
+  if(page==='log')loadLog();
+  if(page==='products'||page==='dash')loadAll();
+}
+
+async function api(path,method='GET',body=null){
+  const opts={method,headers:{'Content-Type':'application/json','x-admin-token':TOKEN}};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(path,opts);return r.json();
+}
+
+async function loadAll(){const prods=await api('/api/admin/products');renderStats(prods);renderDash(prods);renderProds(prods);}
+
+function renderStats(p){
+  const avail=p.filter(x=>x.available).length;
+  const prices=p.filter(x=>x.price>0).map(x=>x.price);
+  const avg=prices.length?Math.round(prices.reduce((a,b)=>a+b,0)/prices.length):0;
+  const photos=p.reduce((sum,x)=>sum+(x.images?x.images.length:0),0);
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat"><div class="stat-l">Total Pieces</div><div class="stat-v g">${p.length}</div></div>
+    <div class="stat"><div class="stat-l">Available</div><div class="stat-v">${avail}</div></div>
+    <div class="stat"><div class="stat-l">Photos</div><div class="stat-v">${photos}</div></div>
+    <div class="stat"><div class="stat-l">Avg Price</div><div class="stat-v">${avg?'$'+avg:'—'}</div></div>`;
+}
+
+function thumbsCell(p){
+  const imgs=p.images||[];
+  if(!imgs.length)return`<td><div style="width:36px;height:36px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--gold);border:1px solid var(--bd)">✦</div></td>`;
+  const stack=imgs.slice(0,3).map((img,i)=>`<img src="${img}" style="width:30px;height:30px;object-fit:cover;border:1px solid var(--s1);margin-left:${i>0?'-6px':'0'};position:relative;z-index:${3-i}">`).join('');
+  return`<td><div style="display:flex;align-items:center">${stack}${imgs.length>3?`<span style="font-size:.62rem;color:var(--t3);margin-left:6px">+${imgs.length-3}</span>`:''}</div></td>`;
+}
+
+function row(p,full){
+  const av=p.available?'<span class="chip chip-y">Available</span>':'<span class="chip chip-n">Unavailable</span>';
+  const bd=p.badge?`<span class="chip chip-${p.badge.toLowerCase()}">${p.badge}</span>`:'<span class="tmute">—</span>';
+  const pr=p.price===0?'<span class="tmute">Enquire</span>':`<span class="tprice">${p.price} ${p.currency}</span>`;
+  const btns=`<div class="acts"><button class="ab ab-e" onclick="editProd('${p.id}')">Edit</button><button class="ab ab-c" onclick="openNotes('${p.id}','${p.name.replace(/'/g,"\\'")}')">Notes</button><button class="ab ab-d" onclick="delProd('${p.id}','${p.name.replace(/'/g,"\\'")}')">Remove</button></div>`;
+  if(full)return`<tr>${thumbsCell(p)}<td class="tname">${p.name}</td><td class="tmute">${p.category}</td><td>${pr}</td><td>${bd}</td><td>${av}</td><td>${btns}</td></tr>`;
+  return`<tr>${thumbsCell(p)}<td class="tname">${p.name}</td><td class="tmute">${p.category}</td><td>${pr}</td><td>${av}</td><td>${btns}</td></tr>`;
+}
+
+function renderDash(p){document.getElementById('dashTbl').innerHTML=p.map(x=>row(x,false)).join('')||'<tr><td colspan="6" style="color:var(--t3);padding:2rem;font-size:.8rem;letter-spacing:.08em">No pieces in collection yet.</td></tr>';}
+function renderProds(p){document.getElementById('prodTbl').innerHTML=p.map(x=>row(x,true)).join('')||'<tr><td colspan="7" style="color:var(--t3);padding:2rem;font-size:.8rem;letter-spacing:.08em">No pieces in collection yet.</td></tr>';}
+
+async function submitProduct(){
+  const body={name:document.getElementById('fn').value.trim(),category:document.getElementById('fcat').value.trim(),desc:document.getElementById('fdesc').value.trim(),price:parseFloat(document.getElementById('fprice').value)||0,currency:document.getElementById('fcur').value,badge:document.getElementById('fbadge').value,available:document.getElementById('favail').value==='true',images:currentImages};
+  if(!body.name){toast('Name is required','err');return;}
+  if(editId){await api('/api/admin/products/'+editId,'PUT',body);toast('Piece updated ✓','ok');}
+  else{await api('/api/admin/products','POST',body);toast('Piece added to collection ✓','ok');}
+  cancelEdit();loadAll();nav('products');
+}
+
+async function editProd(id){
+  const p=(await api('/api/admin/products')).find(x=>x.id===id);if(!p)return;
+  editId=id;
+  document.getElementById('ftitle').textContent='Edit Piece';
+  document.getElementById('fsubmit').textContent='Save Changes';
+  document.getElementById('fn').value=p.name;document.getElementById('fcat').value=p.category;
+  document.getElementById('fdesc').value=p.desc;document.getElementById('fprice').value=p.price;
+  document.getElementById('fcur').value=p.currency;document.getElementById('fbadge').value=p.badge||'';
+  document.getElementById('favail').value=String(p.available);
+  currentImages=p.images?[...p.images]:[];renderImagePreviews();nav('add');
+}
+
+function cancelEdit(){
+  editId=null;document.getElementById('ftitle').textContent='Add Piece';document.getElementById('fsubmit').textContent='Add to Collection';
+  ['fn','fcat','fdesc','fprice'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fbadge').value='';document.getElementById('favail').value='true';resetImages();
+}
+
+async function delProd(id,name){if(!confirm(`Remove "${name}" from collection?`))return;await api('/api/admin/products/'+id,'DELETE');toast('Removed from collection','err');loadAll();}
+
+async function loadLog(){
+  const acts=await api('/api/admin/activities');
+  const icons={ADD:['ico-add','＋'],EDIT:['ico-edit','✎'],DELETE:['ico-del','✕'],NOTE:['ico-note','✦']};
+  document.getElementById('logList').innerHTML=acts.length
+    ?acts.map(a=>{const[cls,ico]=icons[a.action]||['ico-edit','?'];return`<div class="aitem"><div class="aico ${cls}">${ico}</div><div><div class="adet">${a.detail}</div><div class="ats">${new Date(a.ts).toLocaleString()} · ${a.ip}</div></div></div>`;}).join('')
+    :'<div style="padding:2rem;color:var(--t3);font-size:.78rem;letter-spacing:.08em">No activity yet.</div>';
+}
+
+async function openNotes(pid,name){noteProductId=pid;document.getElementById('noteTitle').textContent='Notes — '+name;document.getElementById('noteOverlay').classList.add('open');await refreshNotes();}
+function closeNotes(){document.getElementById('noteOverlay').classList.remove('open');noteProductId=null;}
+async function refreshNotes(){const r=await fetch('/api/comments/'+noteProductId);const cmts=await r.json();document.getElementById('notesList').innerHTML=cmts.length?cmts.map(c=>`<div class="citem"><div><div class="ctxt">${c.text}</div><div class="cts">${new Date(c.ts).toLocaleString()}</div></div><button class="cdel" onclick="delNote('${c.id}')">✕</button></div>`).join(''):'<p style="color:var(--t3);font-size:.78rem;padding:.4rem 0;letter-spacing:.05em">No notes yet.</p>';}
+async function addNote(){const text=document.getElementById('noteInput').value.trim();if(!text)return;await api('/api/admin/comments','POST',{productId:noteProductId,text});document.getElementById('noteInput').value='';await refreshNotes();toast('Note saved ✓','ok');}
+async function delNote(id){await api('/api/admin/comments/'+id,'DELETE');await refreshNotes();}
+
+function toast(msg,type='ok'){const t=document.getElementById('toast');t.textContent=msg;t.className='show '+type;setTimeout(()=>t.className='',3000);}
+</script>
+</body>
+</html>
